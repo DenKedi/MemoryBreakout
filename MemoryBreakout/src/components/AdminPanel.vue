@@ -1,7 +1,6 @@
 <template>
   <div class="admin-panel">
     <h2>Game Room Management</h2>
-
     <div v-if="isLoading && !predefinedRooms.length" class="loading">Loading room data...</div>
     <div v-if="errorMessage" class="error-message global-error">{{ errorMessage }}</div>
 

@@ -2,7 +2,7 @@ import { io } from 'socket.io-client';
 
 let socket;
 const localBackendUrl = 'http://localhost:3000'; // lokale Backend-URL
-const herokuBackendUrl = import.meta.env.VITE_BACKEND_URL || 'https://memory-breakout.herokuapp.com'; // Heroku production URL
+const herokuBackendUrl = import.meta.env.BACKEND_URL || 'https://memory-breakout-4fccea4faa99.herokuapp.com/'; // Heroku production URL
 
 if (import.meta.env.DEV) {
   socket = io(localBackendUrl, {

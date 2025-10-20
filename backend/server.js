@@ -9,7 +9,26 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    // Allow Cloudflare frontend (memory-breakout.bleck.it) and all bleck.it subdomains
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        'http://localhost:5173', // Dev
+        /^https:\/\/(.+\.)?bleck\.it$/, // bleck.it and all subdomains
+      ];
+
+      if (
+        !origin ||
+        allowedOrigins.some(allowed =>
+          typeof allowed === 'string'
+            ? allowed === origin
+            : allowed.test(origin)
+        )
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
   },
 });
@@ -37,12 +56,12 @@ const ROOM_TEMPLATE = {
 };
 
 const frontendPath = path.join(__dirname, 'public_frontend');
-const deployedIconPath = path.join(__dirname, 'assets_from_frontend', 'icons');
+const herokuIconPath = path.join(__dirname, 'icons');
 app.use(express.static(frontendPath));
 let ICONS_BASE_PATH;
 if (process.env.NODE_ENV === 'production') {
-  console.log('SERVER: Running in production mode. Using deployed icon path.');
-  ICONS_BASE_PATH = deployedIconPath;
+  console.log('SERVER: Running in production mode. Using Heroku icon path.');
+  ICONS_BASE_PATH = herokuIconPath;
 } else {
   console.log(
     'SERVER: Running in development mode. Using local frontend source icon path.'
@@ -55,7 +74,7 @@ if (!fs.existsSync(ICONS_BASE_PATH)) {
     `WARNUNG: Der ausgewählte ICONS_BASE_PATH existiert nicht: ${ICONS_BASE_PATH}`
   );
   const alternativePath =
-    ICONS_BASE_PATH === localIconPath ? deployedIconPath : localIconPath;
+    ICONS_BASE_PATH === localIconPath ? herokuIconPath : localIconPath;
   if (fs.existsSync(alternativePath)) {
     console.warn(`WARNUNG: Fallback auf alternativen Pfad: ${alternativePath}`);
     ICONS_BASE_PATH = alternativePath;
